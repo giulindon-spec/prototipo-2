@@ -17,7 +17,7 @@
       height: 100%;
       overflow: hidden;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #222;
+      background-color: #111;
     }
     #canvas-container {
       width: 100%;
@@ -27,7 +27,6 @@
       left: 0;
       z-index: 1;
     }
-    /* Estilo Roblox HUD */
     #hud {
       position: absolute;
       top: 20px;
@@ -38,34 +37,14 @@
       pointer-events: none;
     }
     #hud h1 {
-      font-size: 22px;
+      font-size: 24px;
       margin-bottom: 5px;
       color: #ffcc00;
     }
     #hud p {
-      font-size: 15px;
+      font-size: 16px;
       margin-bottom: 3px;
     }
-    /* Barra de Vida Roblox style */
-    #roblox-health {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 150px;
-      height: 20px;
-      background: rgba(0,0,0,0.5);
-      border: 2px solid white;
-      border-radius: 4px;
-      overflow: hidden;
-      z-index: 10;
-    }
-    #health-bar-fill {
-      width: 100%;
-      height: 100%;
-      background: #2ecc71;
-    }
-
-    /* Pantalla de Inicio / Mensajes */
     #message-screen {
       position: absolute;
       top: 0;
@@ -83,14 +62,14 @@
       padding: 20px;
     }
     #message-screen h2 {
-      font-size: 34px;
+      font-size: 36px;
       color: #ffcc00;
       margin-bottom: 15px;
       text-shadow: 2px 2px #000;
     }
     #message-screen p {
-      font-size: 17px;
-      max-width: 550px;
+      font-size: 18px;
+      max-width: 600px;
       margin-bottom: 25px;
       line-height: 1.5;
     }
@@ -99,20 +78,19 @@
       font-size: 20px;
       font-weight: bold;
       color: white;
-      background: #ff5555;
+      background: #e67e22;
       border: 3px solid #fff;
       border-radius: 12px;
       cursor: pointer;
-      box-shadow: 0 4px 0 #990000;
+      box-shadow: 0 4px 0 #b95d15;
       transition: transform 0.1s;
     }
     #btn-action:active {
       transform: translateY(4px);
-      box-shadow: 0 0 0 #990000;
+      box-shadow: 0 0 0 #b95d15;
     }
   </style>
 
-  <!-- Three.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -124,17 +102,13 @@
     <p id="hud-controls">WASD: Mover | E: Cargar/Dejar en el camión</p>
   </div>
 
-  <div id="roblox-health">
-    <div id="health-bar-fill"></div>
-  </div>
-
   <div id="message-screen">
     <h2 id="msg-title">Fletes Bauti y Papá</h2>
     <p id="msg-text">
-      ¡Ayuda a tu papá a organizar las heladeras, mesas, sofás y cajas dentro del camión azul! <br><br>
-      Usa las teclas <b>WASD</b> para caminar con Bauti (con tu buzo marrón y rulos), acércate a los objetos y presiona <b>E</b> para llevarlos al camión.
+      ¡Ayuda a Bauti (con su buzo marrón, rulos y mochila) y a su papá a acomodar las heladeras, mesas, sofás y cajas dentro del camión azul!<br><br>
+      Usa las teclas <b>WASD</b> para moverte y presiona <b>E</b> cerca de los objetos para levantarlos.
     </p>
-    <button id="btn-action">¡JUGAR!</button>
+    <button id="btn-action">¡JUGAR AHORA!</button>
   </div>
 
   <script src="game.js"></script>
