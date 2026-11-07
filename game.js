@@ -1,5 +1,5 @@
 let scene, camera, renderer;
-let gameState = 'START'; // START, PHASE1_LOAD, PHASE2_DRIVE, WIN
+let gameState = 'START';
 let loadedCount = 0;
 const totalObjects = 5;
 
@@ -11,7 +11,6 @@ let keys = {};
 let truckSpeed = 0;
 let truckSteering = 0;
 let cameraAngleY = 0;
-let cameraAngleX = 0.4;
 
 window.onload = () => {
   initEngine();
@@ -31,143 +30,139 @@ function initEngine() {
 
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
   
-  renderer = new THREE.WebGLRenderer({ antialias: false }); // Estilo Roblox sin tanto suavizado de curvas
+  renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.BasicShadowMap;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
 
-  // Iluminación estilo Roblox (Colores planos y limpios)
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  const sunLight = new THREE.DirectionalLight(0xffffff, 0.6);
-  sunLight.position.set(30, 50, 30);
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.0);
+  sunLight.position.set(40, 70, 40);
   sunLight.castShadow = true;
   scene.add(sunLight);
 }
 
 function createEnvironment() {
-  // Suelo de ciudad / asfalto estilo Roblox
   const floorGeo = new THREE.PlaneGeometry(300, 300);
-  const floorMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x557a2b, roughness: 0.8 });
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   scene.add(floor);
-
-  // Galpón / Depósito de fondo (estilo la imagen de Roblox)
-  const depotMat = new THREE.MeshLambertMaterial({ color: 0xcccccc });
-  const depotGeo = new THREE.BoxGeometry(20, 10, 25);
-  const depot = new THREE.Mesh(depotGeo, depotMat);
-  depot.position.set(-15, 5, -15);
-  scene.add(depot);
 }
 
 function createTruck() {
   truck = new THREE.Group();
 
-  // Camión azul estilo Roblox con caja de flete
-  const cabMat = new THREE.MeshLambertMaterial({ color: 0x1b4965 });
-  const cabGeo = new THREE.BoxGeometry(3, 2.4, 2.5);
+  const cabMat = new THREE.MeshStandardMaterial({ color: 0x1e5799, roughness: 0.4 });
+  const cabGeo = new THREE.BoxGeometry(3.2, 2.4, 2.5);
   const cab = new THREE.Mesh(cabGeo, cabMat);
-  cab.position.set(0, 1.4, 2);
+  cab.position.set(0, 1.4, 2.2);
   cab.castShadow = true;
   truck.add(cab);
 
-  // Caja trasera azul grande
-  const boxMat = new THREE.MeshLambertMaterial({ color: 0x277da1 });
-  const boxGeo = new THREE.BoxGeometry(3.2, 2.7, 4.5);
-  const box = new THREE.Mesh(boxGeo, boxMat);
-  box.position.set(0, 1.6, -1.2);
-  box.castShadow = true;
-  truck.add(box);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x154275, roughness: 0.5 });
+  const bodyGeo = new THREE.BoxGeometry(3.4, 2.7, 5);
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.set(0, 1.5, -1);
+  body.castShadow = true;
+  truck.add(body);
 
-  // Ruedas estilo bloque
-  const wheelGeo = new THREE.BoxGeometry(0.6, 0.8, 0.8);
-  const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
-  const wheelPositions = [
-    [-1.6, 0.4, 2], [1.6, 0.4, 2],
-    [-1.6, 0.4, -1], [1.6, 0.4, -1],
-    [-1.6, 0.4, -2.5], [1.6, 0.4, -2.5]
-  ];
-  wheelPositions.forEach(pos => {
+  const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
+  wheelGeo.rotateZ(Math.PI / 2);
+  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 });
+  
+  [[-1.6, 0.6, 2], [1.6, 0.6, 2], [-1.6, 0.6, -1], [1.6, 0.6, -1], [-1.6, 0.6, -2.5], [1.6, 0.6, -2.5]].forEach(pos => {
     const wheel = new THREE.Mesh(wheelGeo, wheelMat);
     wheel.position.set(...pos);
     truck.add(wheel);
   });
 
-  truck.position.set(6, 0, 0);
+  truck.position.set(8, 0, 0);
   scene.add(truck);
 }
 
 function createCharacters() {
-  // --- BAUTI (Estilo Roblox, buzo marrón, rulos castaños, mochila) ---
+  // --- BAUTI (Estilo 3D estilizado / No bloques rígidos) ---
   bauti = new THREE.Group();
   
-  const skinMat = new THREE.MeshLambertMaterial({ color: 0xffdbac });
-  const hoodieMat = new THREE.MeshLambertMaterial({ color: 0x6e4726 }); // Buzo marrón como en la foto
-  const pantsMat = new THREE.MeshLambertMaterial({ color: 0x111111 });  // Pantalón negro
-  const stripeMat = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Líneas blancas del pantalón
-  const backpackMat = new THREE.MeshLambertMaterial({ color: 0x333333 }); // Mochila negra
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.6 });
+  const hoodieMat = new THREE.MeshStandardMaterial({ color: 0x6e4726, roughness: 0.7 }); // Buzo marrón
+  const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1b1b1b, roughness: 0.7 });  // Pantalón negro
+  const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffffff }); // Líneas blancas
+  const backpackMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }); // Mochila
 
-  // Torso (Buzo marrón)
-  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.4), hoodieMat);
+  // Torso (Buzo marrón con volumen suave)
+  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 1.0, 12), hoodieMat);
   torso.position.y = 1.1;
   torso.castShadow = true;
   bauti.add(torso);
 
   // Mochila en la espalda
-  const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.3), backpackMat);
-  backpack.position.set(0, 1.1, -0.3);
+  const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.3), backpackMat);
+  backpack.position.set(0, 1.15, -0.28);
   bauti.add(backpack);
 
-  // Cabeza Bloque Roblox
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat);
-  head.position.y = 1.65;
+  // Cabeza redondeada estilizada
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), skinMat);
+  head.position.y = 1.85;
+  head.castShadow = true;
   bauti.add(head);
 
-  // Pelo con rulos castaños medianos (bloques escalonados estilo voxel)
-  const hairMat = new THREE.MeshLambertMaterial({ color: 0x3d2314 });
-  for (let x = -0.27; x <= 0.27; x += 0.13) {
-    for (let z = -0.27; z <= 0.27; z += 0.13) {
-      const curl = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.14), hairMat);
-      curl.position.set(x, 1.9, z);
-      bauti.add(curl);
-    }
+  // Pelo con rulos castaños medianos con volumen (esferas y cúpulas suaves)
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, roughness: 0.9 });
+  for (let i = 0; i < 20; i++) {
+    const curl = new THREE.Mesh(new THREE.DodecahedronGeometry(0.09), hairMat);
+    const u = Math.random() * Math.PI * 2;
+    const v = Math.random() * Math.PI * 0.45;
+    curl.position.set(
+      0.28 * Math.sin(v) * Math.cos(u),
+      1.92 + 0.16 * Math.cos(v),
+      0.28 * Math.sin(v) * Math.sin(u)
+    );
+    bauti.add(curl);
   }
 
-  // Piernas con líneas blancas laterales
-  const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 0.35), pantsMat);
-  leg1.position.set(-0.18, 0.5, 0);
+  // Piernas estilizadas con líneas blancas
+  const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.75, 8), pantsMat);
+  leg1.position.set(-0.16, 0.38, 0);
   const leg2 = leg1.clone();
-  leg2.position.set(0.18, 0.5, 0);
-  bauti.add(leg1, leg2);
+  leg2.position.set(0.16, 0.38, 0);
+  
+  // Líneas blancas laterales en los pantalones
+  const stripe1 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.75, 0.13), stripeMat);
+  stripe1.position.set(-0.22, 0.38, 0);
+  const stripe2 = stripe1.clone();
+  stripe2.position.set(0.22, 0.38, 0);
 
-  bauti.position.set(0, 0, 4);
+  bauti.add(leg1, leg2, stripe1, stripe2);
+  bauti.position.set(0, 0, 5);
   scene.add(bauti);
 
   // --- PAPÁ ---
   dad = new THREE.Group();
-  const dadShirt = new THREE.MeshLambertMaterial({ color: 0x85714d });
-  const dadBody = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.45), dadShirt);
-  dadBody.position.y = 1.2;
+  const dadShirt = new THREE.MeshStandardMaterial({ color: 0x85714d });
+  const dadBody = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.45, 1.3, 12), dadShirt);
+  dadBody.position.y = 1.3;
   dad.add(dadBody);
 
-  const dadHead = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), skinMat);
-  dadHead.position.y = 1.8;
+  const dadHead = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), skinMat);
+  dadHead.position.y = 2.15;
   dad.add(dadHead);
 
-  dad.position.set(4, 0, 2);
+  dad.position.set(5, 0, 3);
   scene.add(dad);
 }
 
 function createFurniture() {
   const materials = {
-    wood: new THREE.MeshLambertMaterial({ color: 0x8b5a2b }),
-    fridge: new THREE.MeshLambertMaterial({ color: 0xe0e0e0 }),
-    box: new THREE.MeshLambertMaterial({ color: 0xc29b61 }),
-    sofa: new THREE.MeshLambertMaterial({ color: 0x2b4c7e })
+    wood: new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.6 }),
+    fridge: new THREE.MeshStandardMaterial({ color: 0xe0e0e0, metalness: 0.4, roughness: 0.3 }),
+    box: new THREE.MeshStandardMaterial({ color: 0xc29b61, roughness: 0.8 }),
+    sofa: new THREE.MeshStandardMaterial({ color: 0x2b4c7e, roughness: 0.7 })
   };
 
   const createItem = (geo, mat, name, pos) => {
@@ -178,11 +173,10 @@ function createFurniture() {
     interactiveItems.push(mesh);
   };
 
-  // Muebles variados para el flete
-  createItem(new THREE.BoxGeometry(1, 2.2, 1), materials.fridge, 'Heladera', [-6, 1.1, -2]);
-  createItem(new THREE.BoxGeometry(1.5, 0.9, 1.2), materials.wood, 'Mesa', [-8, 0.45, 3]);
+  createItem(new THREE.BoxGeometry(1.1, 2.2, 1.1), materials.fridge, 'Heladera', [-6, 1.1, -2]);
+  createItem(new THREE.BoxGeometry(1.5, 0.9, 1.2), materials.wood, 'Mesa de Madera', [-8, 0.45, 3]);
   createItem(new THREE.BoxGeometry(1, 1, 1), materials.box, 'Caja de Cartón', [-4, 0.5, 2]);
-  createItem(new THREE.BoxGeometry(1.8, 0.8, 1), materials.sofa, 'Sofá', [-10, 0.4, -1]);
+  createItem(new THREE.BoxGeometry(2, 0.85, 1.1), materials.sofa, 'Sofá', [-10, 0.42, -1]);
   createItem(new THREE.BoxGeometry(0.8, 0.8, 0.8), materials.box, 'Caja Chica', [-3, 0.4, 5]);
 }
 
@@ -216,11 +210,11 @@ function setupEvents() {
 
 function handlePickupOrDrop() {
   if (carriedObject) {
-    const distToTruck = bauti.position.distanceTo(truck.position.clone().add(new THREE.Vector3(0,0,-1.2)));
+    const distToTruck = bauti.position.distanceTo(truck.position.clone().add(new THREE.Vector3(0,0,-1)));
     if (distToTruck < 4) {
       carriedObject.userData.isLoaded = true;
       scene.attach(carriedObject);
-      carriedObject.position.set(truck.position.x, 1.2 + (loadedCount * 0.5), truck.position.z - 1.2);
+      carriedObject.position.set(truck.position.x, 1.2 + (loadedCount * 0.5), truck.position.z - 1);
       carriedObject = null;
       loadedCount++;
       
@@ -237,7 +231,7 @@ function handlePickupOrDrop() {
     }
   } else {
     if (loadedCount >= totalObjects) {
-      const distToCab = bauti.position.distanceTo(truck.position.clone().add(new THREE.Vector3(0,0,2)));
+      const distToCab = bauti.position.distanceTo(truck.position.clone().add(new THREE.Vector3(0,0,2.2)));
       if (distToCab < 3) {
         startDrivingPhase();
         return;
@@ -248,7 +242,7 @@ function handlePickupOrDrop() {
       if (!item.userData.isLoaded && bauti.position.distanceTo(item.position) < 2.2) {
         carriedObject = item;
         bauti.add(carriedObject);
-        carriedObject.position.set(0, 1.5, 0.7);
+        carriedObject.position.set(0, 1.6, 0.7);
       }
     });
   }
@@ -258,9 +252,9 @@ function startDrivingPhase() {
   gameState = 'PHASE2_DRIVE';
   bauti.visible = false;
   dad.visible = false;
-  document.getElementById('hud-title').innerText = "Fase 2: Conduce el Camión Azul";
-  document.getElementById('hud-status').innerText = "Ruta de mudanza en curso";
-  document.getElementById('hud-controls').innerText = "W/S: Acelerar/Frenar | A/D: Girar volante";
+  document.getElementById('hud-title').innerText = "Fase 2: Conduce el Camión al Destino";
+  document.getElementById('hud-status').innerText = "Ruta de flete en curso";
+  document.getElementById('hud-controls').innerText = "W/S: Acelerar/Frenar | A/D: Girar el volante";
 }
 
 function updatePhase1() {
@@ -276,9 +270,8 @@ function updatePhase1() {
     bauti.rotation.y = Math.atan2(inputVec.x, inputVec.z);
   }
 
-  // Cámara en tercera persona fija siguiendo a Bauti
-  camera.position.set(bauti.position.x, bauti.position.y + 4, bauti.position.z + 6);
-  camera.lookAt(bauti.position.x, bauti.position.y + 1, bauti.position.z);
+  camera.position.set(bauti.position.x, bauti.position.y + 4.5, bauti.position.z + 7);
+  camera.lookAt(bauti.position.x, bauti.position.y + 1.2, bauti.position.z);
 }
 
 function updatePhase2() {
@@ -293,15 +286,15 @@ function updatePhase2() {
   truck.rotation.y += truckSteering * (truckSpeed / 0.35);
   truck.translateZ(truckSpeed);
 
-  camera.position.set(truck.position.x, truck.position.y + 4.5, truck.position.z - 10);
+  camera.position.set(truck.position.x, truck.position.y + 5, truck.position.z - 11);
   camera.lookAt(truck.position.clone().add(new THREE.Vector3(0, 1.5, 2)));
 
   if (truck.position.z > 100) {
     gameState = 'WIN';
     const screen = document.getElementById('message-screen');
     document.getElementById('msg-title').innerText = "¡Mudanza Exitosa!";
-    document.getElementById('msg-text').innerText = "¡Excelente trabajo Bauti y Papá! Entregaron todos los muebles y electrodomésticos sanos y salvos.";
-    document.getElementById('btn-action').innerText = "JUGAR OTRA VEZ";
+    document.getElementById('msg-text').innerText = "¡Excelente trabajo Bauti y Papá! Todos los muebles llegaron perfectamente a destino.";
+    document.getElementById('btn-action').innerText = "JUGAR DE NUEVO";
     screen.style.display = 'flex';
   }
 }
