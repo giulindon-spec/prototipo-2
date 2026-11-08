@@ -87,7 +87,7 @@ function createTruck() {
 function createCharacters() {
   const textureLoader = new THREE.TextureLoader();
   
-  // Carga la imagen bauti.png de tu repositorio
+  // Carga la imagen bau.png de tu repositorio
   const bautiTexture = textureLoader.load('bauti.png'); 
   const bautiMat = new THREE.SpriteMaterial({ map: bautiTexture, transparent: true });
   
