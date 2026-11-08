@@ -85,24 +85,22 @@ function createTruck() {
 }
 
 function createCharacters() {
-  // --- BAUTI (Sprite Ilustrado 2D en mundo 3D - Idéntico al dibujo de la foto) ---
   const textureLoader = new THREE.TextureLoader();
   
-  // Usamos una textura de personaje ilustrado estilizado
-  const bautiTexture = textureLoader.load('https://i.imgur.com/Wb1Q9Z4.png'); 
-  const bautiMat = new THREE.SpriteMaterial({ map: bautiTexture });
+  // Carga la imagen bauti.png de tu repositorio
+  const bautiTexture = textureLoader.load('bauti.png'); 
+  const bautiMat = new THREE.SpriteMaterial({ map: bautiTexture, transparent: true });
   
   bauti = new THREE.Sprite(bautiMat);
-  bauti.scale.set(1.8, 2.4, 1); // Proporción humana real de Bauti
-  bauti.position.set(0, 1.2, 5);
+  bauti.scale.set(2.0, 2.6, 1); // Tamaño y proporción real de Bauti
+  bauti.position.set(0, 1.3, 5);
   scene.add(bauti);
 
-  // --- PAPÁ ---
-  const dadTexture = textureLoader.load('https://i.imgur.com/3Z6K8qJ.png');
-  const dadMat = new THREE.SpriteMaterial({ map: dadTexture });
+  // Papá
+  const dadMat = new THREE.SpriteMaterial({ map: bautiTexture, transparent: true });
   dad = new THREE.Sprite(dadMat);
-  dad.scale.set(2.0, 2.7, 1);
-  dad.position.set(5, 1.35, 3);
+  dad.scale.set(2.3, 3.0, 1);
+  dad.position.set(5, 1.5, 3);
   scene.add(dad);
 }
 
