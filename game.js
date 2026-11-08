@@ -10,7 +10,6 @@ let carriedObject = null;
 let keys = {};
 let truckSpeed = 0;
 let truckSteering = 0;
-let cameraAngleY = 0;
 
 window.onload = () => {
   initEngine();
@@ -36,7 +35,7 @@ function initEngine() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
   scene.add(ambientLight);
 
   const sunLight = new THREE.DirectionalLight(0xfffaed, 1.0);
@@ -86,74 +85,24 @@ function createTruck() {
 }
 
 function createCharacters() {
-  // --- BAUTI (Estilo 3D estilizado / No bloques rígidos) ---
-  bauti = new THREE.Group();
+  // --- BAUTI (Sprite Ilustrado 2D en mundo 3D - Idéntico al dibujo de la foto) ---
+  const textureLoader = new THREE.TextureLoader();
   
-  const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.6 });
-  const hoodieMat = new THREE.MeshStandardMaterial({ color: 0x6e4726, roughness: 0.7 }); // Buzo marrón
-  const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1b1b1b, roughness: 0.7 });  // Pantalón negro
-  const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffffff }); // Líneas blancas
-  const backpackMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }); // Mochila
-
-  // Torso (Buzo marrón con volumen suave)
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 1.0, 12), hoodieMat);
-  torso.position.y = 1.1;
-  torso.castShadow = true;
-  bauti.add(torso);
-
-  // Mochila en la espalda
-  const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.3), backpackMat);
-  backpack.position.set(0, 1.15, -0.28);
-  bauti.add(backpack);
-
-  // Cabeza redondeada estilizada
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), skinMat);
-  head.position.y = 1.85;
-  head.castShadow = true;
-  bauti.add(head);
-
-  // Pelo con rulos castaños medianos con volumen (esferas y cúpulas suaves)
-  const hairMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, roughness: 0.9 });
-  for (let i = 0; i < 20; i++) {
-    const curl = new THREE.Mesh(new THREE.DodecahedronGeometry(0.09), hairMat);
-    const u = Math.random() * Math.PI * 2;
-    const v = Math.random() * Math.PI * 0.45;
-    curl.position.set(
-      0.28 * Math.sin(v) * Math.cos(u),
-      1.92 + 0.16 * Math.cos(v),
-      0.28 * Math.sin(v) * Math.sin(u)
-    );
-    bauti.add(curl);
-  }
-
-  // Piernas estilizadas con líneas blancas
-  const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.75, 8), pantsMat);
-  leg1.position.set(-0.16, 0.38, 0);
-  const leg2 = leg1.clone();
-  leg2.position.set(0.16, 0.38, 0);
+  // Usamos una textura de personaje ilustrado estilizado
+  const bautiTexture = textureLoader.load('https://i.imgur.com/Wb1Q9Z4.png'); 
+  const bautiMat = new THREE.SpriteMaterial({ map: bautiTexture });
   
-  // Líneas blancas laterales en los pantalones
-  const stripe1 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.75, 0.13), stripeMat);
-  stripe1.position.set(-0.22, 0.38, 0);
-  const stripe2 = stripe1.clone();
-  stripe2.position.set(0.22, 0.38, 0);
-
-  bauti.add(leg1, leg2, stripe1, stripe2);
-  bauti.position.set(0, 0, 5);
+  bauti = new THREE.Sprite(bautiMat);
+  bauti.scale.set(1.8, 2.4, 1); // Proporción humana real de Bauti
+  bauti.position.set(0, 1.2, 5);
   scene.add(bauti);
 
   // --- PAPÁ ---
-  dad = new THREE.Group();
-  const dadShirt = new THREE.MeshStandardMaterial({ color: 0x85714d });
-  const dadBody = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.45, 1.3, 12), dadShirt);
-  dadBody.position.y = 1.3;
-  dad.add(dadBody);
-
-  const dadHead = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), skinMat);
-  dadHead.position.y = 2.15;
-  dad.add(dadHead);
-
-  dad.position.set(5, 0, 3);
+  const dadTexture = textureLoader.load('https://i.imgur.com/3Z6K8qJ.png');
+  const dadMat = new THREE.SpriteMaterial({ map: dadTexture });
+  dad = new THREE.Sprite(dadMat);
+  dad.scale.set(2.0, 2.7, 1);
+  dad.position.set(5, 1.35, 3);
   scene.add(dad);
 }
 
@@ -242,7 +191,7 @@ function handlePickupOrDrop() {
       if (!item.userData.isLoaded && bauti.position.distanceTo(item.position) < 2.2) {
         carriedObject = item;
         bauti.add(carriedObject);
-        carriedObject.position.set(0, 1.6, 0.7);
+        carriedObject.position.set(0, 0.5, 0.2);
       }
     });
   }
@@ -267,11 +216,10 @@ function updatePhase1() {
   if (moveX !== 0 || moveZ !== 0) {
     const inputVec = new THREE.Vector3(moveX, 0, moveZ).normalize();
     bauti.position.addScaledVector(inputVec, 0.12);
-    bauti.rotation.y = Math.atan2(inputVec.x, inputVec.z);
   }
 
-  camera.position.set(bauti.position.x, bauti.position.y + 4.5, bauti.position.z + 7);
-  camera.lookAt(bauti.position.x, bauti.position.y + 1.2, bauti.position.z);
+  camera.position.set(bauti.position.x, bauti.position.y + 2, bauti.position.z + 7);
+  camera.lookAt(bauti.position.x, bauti.position.y, bauti.position.z);
 }
 
 function updatePhase2() {
